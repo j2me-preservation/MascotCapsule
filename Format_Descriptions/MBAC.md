@@ -86,38 +86,38 @@ Vertices are packed in blocks of up to 64 each. These blocks form a bitstream an
 
     bitstream {
         while (have_vertices < num_vertices) {
-            uint6_t count_minus_one;
-            uint2_t range;
+            uint(6) count_minus_one;
+            uint(2) range;
 
             num_vertices_in_block := count_minus_one + 1;
 
             switch (range) {
                 case 0:
                     repeat(num_vertices_in_block) {
-                        int8_t x;
-                        int8_t y;
-                        int8_t z;
+                        sint(8) x;
+                        sint(8) y;
+                        sint(8) z;
                     }
                     break;
                 case 1:
                     repeat(num_vertices_in_block) {
-                        int10_t x;
-                        int10_t y;
-                        int10_t z;
+                        sint(10) x;
+                        sint(10) y;
+                        sint(10) z;
                     }
                     break;
                 case 2:
                     repeat(num_vertices_in_block) {
-                        int13_t x;
-                        int13_t y;
-                        int13_t z;
+                        sint(13) x;
+                        sint(13) y;
+                        sint(13) z;
                     }
                     break;
                 case 3:
                     repeat(num_vertices_in_block) {
-                        int16_t x;
-                        int16_t y;
-                        int16_t z;
+                        sint(16) x;
+                        sint(16) y;
+                        sint(16) z;
                     }
                     break;
             }
@@ -136,21 +136,21 @@ Normals are packed in blocks of up to 64 each. These blocks form a bitstream and
 
     bitstream {
         repeat (num_vertices) {
-            int7_t x;
+            sint(7) x;
 
             if (x == -64) {
-                uint3_t direction;
+                uint(3) direction;
             }
             else {
-                int7_t y;
-                int1_t z_sign;
+                sint(7) y;
+                sint(1) z_sign;
             }
         }
     }
 
 TODO: describe `direction`
 
-If XYZ format is used, Z can be calculated as `+/- sqrt(1 - x^2 - y^2)`. `z_sign` is 1 if Z is negative.
+If XYZ format is used, Z can be calculated as `+/- sqrt(1 - x^2 - y^2)`. `z_sign` is -1 if Z is negative.
 
 Some files I've examined have x^2 + y^2 > 1, not sure what that means.
 
@@ -160,37 +160,39 @@ F-polygons: not documented for now.
 
 T-polygons:
 
-    uint8_t unknown_bits;
-    uint8_t vertex_index_bits;
-    uint8_t uv_bits;
-    uint8_t somedata;                       // meaning unknown
+    uint(8) unknown_bits;
+    uint(8) vertex_index_bits;
+    uint(8) uv_bits;
+    uint(8) somedata;                       // meaning unknown
 
     repeat (num_polyt3) {
-        uint{unknown_bits}_t unknown;       // could be polygon flags
+        uint(unknown_bits) unknown;       // could be polygon flags
                                             // definitely NOT material index
 
         repeat(3) {
-            uint{vertex_index_bits}_t vertex_index;
+            uint(vertex_index_bits) vertex_index;
         }
 
         repeat(3) {
-            uint{uv_bits}_t u;
-            uint{uv_bits}_t v;
+            uint(uv_bits) u;
+            uint(uv_bits) v;
         }
     }
 
     repeat (num_polyt4) {
-        uint{unknown_bits}_t unknown;
+        uint(unknown_bits) unknown;
 
         repeat(4) {
-            uint{vertex_index_bits}_t vertex_index;
+            uint(vertex_index_bits) vertex_index;
         }
 
         repeat(4) {
-            uint{uv_bits}_t u;
-            uint{uv_bits}_t v;
+            uint(uv_bits) u;
+            uint(uv_bits) v;
         }
     }
+
+UV coordinates seem to be simply in pixels. Unknown if `uv_bits` can be 0.
 
 Note that polygon->material mapping is not stored here.
 
