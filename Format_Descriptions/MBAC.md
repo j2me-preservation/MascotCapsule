@@ -29,7 +29,7 @@ Known NON-implementations (as of 2017/12):
 - Normals (if present)
 - Polygons (types: T3, T4, F3, F4)
 - Segments (bones)
-- 20-byte pseudorandom trailer
+- 20-byte encrypted trailer
 
 ## Format versions
 
@@ -216,6 +216,16 @@ Note that polygon->material mapping is not stored here.
 
 `matrix` is 3 rows (outer loop) by 4 columns; columns 0 through 2 are pre-multiplied by 4096 before conversion to int16; in other words, they use 4.12 signed format. Usually, the matrix will specify rotation + translation, but always unity scale.
 
-### 20-byte pseudorandom trailer
+### 20-byte encrypted trailer
 
-Based on Mersenne Twister. C function `time()` is used as seed. Purpose not yet clear.
+Format:
+
+    uint(16)    key1;
+    uint(8)     data1[8];
+    uint(16)    key2;
+    uint(8)     data2[8];
+
+Data is encrypted using a simple XOR cipher with the corresponding keys. After decryption, `data1` should == `data2`. For MBAC files generated with stock M3DConverter5.1, decrypted data reads as `HI000000` (HI standing for HI CORP.). Abyss engine games have `SE000000` (SE = Sony Ericsson???).
+
+This might have been used for copyright protection, as hinted in `man_pg_comdot_v3_e_102.pdf`.
+
