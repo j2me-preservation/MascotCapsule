@@ -205,13 +205,11 @@ Note that polygon->material mapping is not stored here.
 
 ### Segments (segmentformat=1)
 
-    struct {
-        repeat (num_segments) {
-            uint(16) s_unk1;
-            int(16) s_unk2;         // can be -1
+    repeat (num_segments) {
+        uint(16) s_unk1;
+        int(16) s_unk2;         // can be -1
 
-            int(16) matrix[3][4];
-        }
+        int(16) matrix[3][4];
     }
 
 `s_unk1`, `s_unk2` almost certainly specify a vertex range. Matrix is 3 rows by 4 columns; columns 0 through 2 are pre-multiplied by 4096 before conversion to int16.
