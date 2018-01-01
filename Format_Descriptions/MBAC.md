@@ -229,3 +229,4 @@ Data is encrypted using a simple XOR cipher with the corresponding keys. After d
 
 This might have been used for copyright protection, as hinted in `man_pg_comdot_v3_e_102.pdf`.
 
+During conversion, keys are chosen using an MT PRNG (seeded with `time()`) and some scene metadata. The plaintext comes from the BAC struct, so it might be possible to specify it in the source BAC file.
