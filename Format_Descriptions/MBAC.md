@@ -20,13 +20,22 @@ Known NON-implementations (as of 2017/12):
 - J2ME-Loader (doesn't implement API)
 - phoneME (doesn't implement API)
 
+## Overall structure
+
+- Header(s)
+- Vertices
+- Normals (if present)
+- Polygons
+- Segments
+- 20-byte pseudorandom trailer
+
 ## Format versions
 
 Known versions of the format, along with allowed data encodings, are listed below.
 
 | Version        | vertexformats | normalformats | polygonformats | segmentformats(?) | Seen in |
 |----------------|---------------|---------------|----------------|-------------------|---------|
-| 3 | 1 | 0 | 1 | 1 |
+| 3 | 1 | 0 (normals N/A) | 1 | 1 |
 | 4 | 1, 2 | 0, 1, 2 | 1, 2 | 1 |
 | 5 | 1, 2 | 0, 1, 2 | 1, 2, 3 | 1 | Burning Tires, GoF, Deep, Blades & Magic, GoF 2 |
 
@@ -196,6 +205,19 @@ UV coordinates seem to be simply in pixels. Unknown if `uv_bits` can be 0.
 
 Note that polygon->material mapping is not stored here.
 
-### Rest of the file
+### Segments (segmentformat=1)
 
-There is a lot more, which is yet to be understood/documented.
+    struct {
+        repeat (num_segments) {
+            uint(16) s_unk1;
+            int(16) s_unk2;         // can be -1
+
+            int(16) matrix[3][4];
+        }
+    }
+
+`s_unk1`, `s_unk2` almost certainly specify a vertex range. Matrix is 3 rows by 4 columns; columns 0 through 2 are pre-multiplied by 4096 before conversion to int16.
+
+### 20-byte pseudorandom trailer
+
+Based on Mersenne Twister. C function `time()` is used as seed. Purpose not yet clear.
