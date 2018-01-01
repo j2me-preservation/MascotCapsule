@@ -204,13 +204,17 @@ Note that polygon->material mapping is not stored here.
 ### Segments (segmentformat=1)
 
     repeat (num_segments) {
-        uint(16) s_unk1;
-        int(16) s_unk2;         // can be -1
+        uint(16)    seg_vertices;
+        int(16)     parent;
 
-        int(16) matrix[3][4];
+        int(16)     matrix[3][4];
     }
 
-`s_unk1`, `s_unk2` almost certainly specify a vertex range. Matrix is 3 rows (outer loop) by 4 columns; columns 0 through 2 are pre-multiplied by 4096 before conversion to int16.
+`seg_vertices` specifies the number of vertices in this segment (starting at wherever the previous segment left off)
+
+`parent` should be "-1" for exactly one segment (root of the skeleton), otherwise it is the non-negative index of parent segment.
+
+`matrix` is 3 rows (outer loop) by 4 columns; columns 0 through 2 are pre-multiplied by 4096 before conversion to int16; in other words, they use 4.12 signed format. Usually, the matrix will specify rotation + translation, but never non-unity scale.
 
 ### 20-byte pseudorandom trailer
 
