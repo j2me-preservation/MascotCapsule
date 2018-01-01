@@ -5,6 +5,8 @@ MBAC file format
 
 The MBAC format contains geometry data, referred to in M3D as Figures. No official documentation for the format is available. It is a binary serialization of the documented BAC format which is used in the content pipeline. A MBAC file is often accompanied by a MTRA file which contains animation data.
 
+MBAC files don't store any texture names, but they have a notion of texture indices.
+
 ## Known implementations
 
 All known implementations are in native code.
@@ -35,7 +37,7 @@ Known versions of the format, along with allowed data encodings, are listed belo
 
 | Version        | vertexformats | normalformats | polygonformats | segmentformats(?) | Seen in |
 |----------------|---------------|---------------|----------------|-------------------|---------|
-| 3 | 1 | 0 (normals N/A) | 1 | 1 |
+| 3 | 1 | 0 (= N/A) | 1 | 1 |
 | 4 | 1, 2 | 0, 1, 2 | 1, 2 | 1 |
 | 5 | 1, 2 | 0, 1, 2 | 1, 2, 3 | 1 | Burning Tires, GoF, Deep, Blades & Magic, GoF 2 |
 
@@ -45,43 +47,39 @@ Some data: https://docs.google.com/spreadsheets/d/1KYqJr-XSWoTbdRDF-JLuCdAbYaKsa
 
 All fields are in little-endian.
 
-The file starts with this header:
+The file starts with this common header:
 
-    struct {
-        char magic[2] = {'M', 'B'};
-        uint16_t formatversion;
+    char magic[2] = {'M', 'B'};
+    uint16_t formatversion;
 
-        if (formatversion > 3) {
-            uint8_t vertexformat;
-            uint8_t normalformat;
-            uint8_t polygonformat;
-            uint8_t segmentformat?;
-        }
-
-        uint16_t num_vertices;
-        uint16_t num_polyT3;
-        uint16_t num_polyT4;
-        uint16_t num_segments;
+    if (formatversion > 3) {
+        uint8_t vertexformat;
+        uint8_t normalformat;
+        uint8_t polygonformat;
+        uint8_t segmentformat?;
     }
+
+    uint16_t num_vertices;
+    uint16_t num_polyT3;
+    uint16_t num_polyT4;
+    uint16_t num_segments;
 
 For polygonformat >= 3, more header data follows.
 
-    struct {
-        uint16_t num_polyF3;
-        uint16_t num_polyF4;
-        uint16_t matcnt0C;      // something like number of materials
-        uint16_t max0E;         // unknown, but related to some polygon attributes
-        uint16_t num_color;
+    uint16_t num_polyF3;
+    uint16_t num_polyF4;
+    uint16_t matcnt0C;      // something like number of materials
+    uint16_t max0E;         // unknown, but related to some polygon attributes
+    uint16_t num_color;
 
-        // meaning of the following is completely unknown
-        repeat(max0E) {
-            uint16_t unk1;
-            uint16_t unk2;
+    // meaning of the following is unknown; likely to be related to materials and/or textures
+    repeat(max0E) {
+        uint16_t unk1;
+        uint16_t unk2;
 
-            repeat(matcnt0E) {
-                uint16_t unk3;
-                uint16_t unk4;
-            }
+        repeat(matcnt0E) {
+            uint16_t unk3;
+            uint16_t unk4;
         }
     }
 
@@ -173,8 +171,8 @@ T-polygons:
     uint(8) somedata;                       // meaning unknown
 
     repeat (num_polyt3) {
-        uint(unknown_bits) unknown;       // could be polygon flags
-                                            // definitely NOT material index
+        uint(unknown_bits) unknown;         // could be polygon flags
+                                            // not material index, but maybe material flags baked into polygons
 
         repeat(3) {
             uint(vertex_index_bits) vertex_index;
@@ -212,7 +210,7 @@ Note that polygon->material mapping is not stored here.
         int(16) matrix[3][4];
     }
 
-`s_unk1`, `s_unk2` almost certainly specify a vertex range. Matrix is 3 rows by 4 columns; columns 0 through 2 are pre-multiplied by 4096 before conversion to int16.
+`s_unk1`, `s_unk2` almost certainly specify a vertex range. Matrix is 3 rows (outer loop) by 4 columns; columns 0 through 2 are pre-multiplied by 4096 before conversion to int16.
 
 ### 20-byte pseudorandom trailer
 
