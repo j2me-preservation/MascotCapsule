@@ -214,7 +214,7 @@ Note that polygon->material mapping is not stored here.
 
 `parent` should be "-1" for exactly one segment (root of the skeleton), otherwise it is the non-negative index of parent segment.
 
-`matrix` is 3 rows (outer loop) by 4 columns; columns 0 through 2 are pre-multiplied by 4096 before conversion to int16; in other words, they use 4.12 signed format. Usually, the matrix will specify rotation + translation, but never non-unity scale.
+`matrix` is 3 rows (outer loop) by 4 columns; columns 0 through 2 are pre-multiplied by 4096 before conversion to int16; in other words, they use 4.12 signed format. Usually, the matrix will specify rotation + translation, but always unity scale.
 
 ### 20-byte pseudorandom trailer
 
