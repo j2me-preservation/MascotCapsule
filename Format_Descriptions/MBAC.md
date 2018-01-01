@@ -25,8 +25,8 @@ Known NON-implementations (as of 2017/12):
 - Header(s)
 - Vertices
 - Normals (if present)
-- Polygons
-- Segments
+- Polygons (types: T3, T4, F3, F4)
+- Segments (bones)
 - 20-byte pseudorandom trailer
 
 ## Format versions
@@ -63,8 +63,6 @@ The file starts with this header:
         uint16_t num_polyT4;
         uint16_t num_segments;
     }
-
-Note: Segments = bones.
 
 For polygonformat >= 3, more header data follows.
 
