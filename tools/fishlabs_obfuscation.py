@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # implements Fishlabs asset (de)obfuscation
 
 import sys
@@ -24,7 +26,14 @@ def fishlabs_deobfuscate(data):
     return bytes(data)
 
 if __name__ == "__main__":
-    with open(sys.argv[1], 'rb+') as f:
-        data = f.read()
-        f.seek(0)
-        f.write(fishlabs_deobfuscate(data))
+    import argparse
+
+    parser = argparse.ArgumentParser(description='(de)obfuscate Fishlabs game assets')
+    parser.add_argument('file', nargs='+')
+    args = parser.parse_args()
+
+    for filename in args.file:
+        with open(filename, 'rb+') as f:
+            data = f.read()
+            f.seek(0)
+            f.write(fishlabs_deobfuscate(data))

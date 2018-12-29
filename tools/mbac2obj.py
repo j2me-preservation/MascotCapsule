@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # MBAC to OBJ converter (stand-alone / importable)
 # todo: do we really want to use this garbage format? PLY is a thing.
 
@@ -10,6 +12,12 @@ MAGNITUDE_10BIT  = 1
 MAGNITUDE_13BIT  = 2
 MAGNITUDE_16BIT  = 3
 
+def fixup_index(index):
+    if index >= 0:
+        return 1 + index
+    else:
+        return index
+
 class VertexSink:
     def __init__(self, f):
         self.f = f
@@ -20,8 +28,16 @@ class VertexSink:
     def normal(self, x, y, z):
         print('n %d %d %d' % (x, t, z), file=self.f)
 
-    def triangle(self, a, b, c):
-        print('f %d %d %d' % (1+a, 1+b, 1+c), file=self.f)
+    def texcoord(self, u, v):
+        print(f'vt {u/255} {1 - v/255}', file=self.f)
+
+    def quad_vt(self, v1, v2, v3, v4, vt1, vt2, vt3, vt4):
+        v1, v2, v3, v4, vt1, vt2, vt3, vt4 = [fixup_index(i) for i in (v1, v2, v3, v4, vt1, vt2, vt3, vt4)]
+        print(f'f {v1}/{vt1} {v2}/{vt2} {v3}/{vt3} {v4}/{vt4}', file=self.f)
+
+    def triangle_vt(self, v1, v2, v3, vt1, vt2, vt3):
+        v1, v2, v3, vt1, vt2, vt3 = [fixup_index(i) for i in (v1, v2, v3, vt1, vt2, vt3)]
+        print(f'f {v1}/{vt1} {v2}/{vt2} {v3}/{vt3}', file=self.f)
 
 class Unpacker:
     def __init__(self, f):
@@ -123,7 +139,7 @@ def unpacknormals_f2(unp, vs):
 
     return 1
 
-def MBAC_to_obj(f, obj):
+def MBAC_to_obj(f, obj, verbose=False):
     (magic, version) = struct.unpack('HH', f.read(4))
 
     if magic != 0x424D:
@@ -210,8 +226,6 @@ def MBAC_to_obj(f, obj):
     if unknown_bits > 8:
         raise Exception('Format error. Please report this bug.')
 
-    print_faces = False
-
     #max_index = 0
     for i in range(num_polyt3):
         unknown = unp.unpackbits(unknown_bits)
@@ -226,12 +240,16 @@ def MBAC_to_obj(f, obj):
         u3 = unp.unpackbits(uv_bits)
         v3 = unp.unpackbits(uv_bits)
 
-        if print_faces:
+        if verbose:
             print('unknown=%d a=%d b=%d c=%d (%d %d) (%d %d) (%d %d)' % (
                     unknown, a, b, c, u1, v1, u2, v2, u3, v3))
         #max_index = max(max_index, a, b, c)
 
-        vs.triangle(a, b, c)
+        vs.texcoord(u1, v1)
+        vs.texcoord(u2, v2)
+        vs.texcoord(u3, v3)
+
+        vs.triangle_vt(a, b, c, -3, -2, -1)
 
     #max_index = 0
     for i in range(num_polyt4):
@@ -250,10 +268,17 @@ def MBAC_to_obj(f, obj):
         u4 = unp.unpackbits(uv_bits)
         v4 = unp.unpackbits(uv_bits)
 
-        if print_faces:
+        if verbose:
             print('unknown=%d a=%d b=%d c=%d d=%d (%d %d) (%d %d) (%d %d) (%d %d)' % (
                     unknown, a, b, c, d, u1, v1, u2, v2, u3, v3, u4, v4))
         #max_index = max(max_index, a, b, c, d)
+
+        vs.texcoord(u1, v1)
+        vs.texcoord(u2, v2)
+        vs.texcoord(u3, v3)
+        vs.texcoord(u4, v4)
+
+        vs.quad_vt(a, b, d, c, -4, -3, -1, -2)
 
     # decode segments
     seg_vertices_sum = 0
@@ -306,6 +331,13 @@ def MBAC_to_obj(f, obj):
         print('WARNING: %d uninterpreted bytes in file' % (file_end - end_at))
 
 if __name__ == "__main__":
-    with open(sys.argv[1], 'rb') as f:
-        with open('vertexdump.obj', 'wt') as obj:
-            MBAC_to_obj(f, obj)
+    import argparse
+
+    parser = argparse.ArgumentParser(description='convert MBAC models to OBJ')
+    parser.add_argument('mbacfile')
+    parser.add_argument('objfile')
+    args = parser.parse_args()
+
+    with open(args.mbacfile, 'rb') as f:
+        with open(args.objfile, 'wt') as obj:
+            MBAC_to_obj(f, obj, True)
