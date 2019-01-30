@@ -27,15 +27,15 @@ Known NON-implementations (as of 2017/12):
 - Header(s)
 - Vertices
 - Normals (if present)
-- Polygons (types: T3, T4, F3, F4)
-- Segments (bones)
+- Faces (types: T3, T4, F3, F4)
+- Bones
 - 20-byte encrypted trailer
 
 ## Format versions
 
 Known versions of the format, along with allowed data encodings, are listed below.
 
-| Version        | vertexformats | normalformats | polygonformats | segmentformats(?) | Seen in |
+| Version        | vertexformats | normalformats | polygonformats | boneformats(?) | Seen in |
 |----------------|---------------|---------------|----------------|-------------------|---------|
 | 3 | 1 | 0 (= N/A) | 1 | 1 |
 | 4 | 1, 2 | 0, 1, 2 | 1, 2 | 1 |
@@ -56,13 +56,13 @@ The file starts with this common header:
         uint8_t vertexformat;
         uint8_t normalformat;
         uint8_t polygonformat;
-        uint8_t segmentformat?;
+        uint8_t boneformat?;
     }
 
     uint16_t num_vertices;
     uint16_t num_polyT3;
     uint16_t num_polyT4;
-    uint16_t num_segments;
+    uint16_t num_bones;
 
 For polygonformat >= 3, more header data follows.
 
@@ -159,7 +159,7 @@ If XYZ format is used, Z can be calculated as `+/- sqrt(1 - x^2 - y^2)`. `z_sign
 
 Some files I've examined have x^2 + y^2 > 1, not sure what that means.
 
-### Polygons (polygonformat=3)
+### Faces (polygonformat=3)
 
 F-polygons: not documented for now.
 
@@ -199,20 +199,20 @@ T-polygons:
 
 UV coordinates seem to be simply in pixels. Unknown if `uv_bits` can be 0.
 
-Note that polygon->material mapping is not stored here.
+Note that face->material mapping is not stored here.
 
-### Segments (segmentformat=1)
+### Bones (boneformat=1)
 
-    repeat (num_segments) {
+    repeat (num_bones) {
         uint(16)    seg_vertices;
         int(16)     parent;
 
         int(16)     matrix[3][4];
     }
 
-`seg_vertices` specifies the number of vertices in this segment (starting at wherever the previous segment left off)
+`seg_vertices` specifies the number of vertices in this bone (starting at wherever the previous bone left off)
 
-`parent` should be "-1" for exactly one segment (root of the skeleton), otherwise it is the non-negative index of parent segment.
+`parent` should be "-1" for exactly one bone (root of the skeleton), otherwise it is the non-negative index of parent bone.
 
 `matrix` is 3 rows (outer loop) by 4 columns; columns 0 through 2 are pre-multiplied by 4096 before conversion to int16; in other words, they use 4.12 signed format. Usually, the matrix will specify rotation + translation, but always unity scale.
 
