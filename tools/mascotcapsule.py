@@ -179,9 +179,6 @@ class Figure:
         if polygonformat != 3:
             raise Exception('Unsupported polygonformat. Please report this bug.')
 
-        if num_polyf3 + num_polyf4 > 0:
-            raise Exception('F-type polygons not supported. Please report this bug.')
-
         #print('tell:', f.tell())
 
         unp = Unpacker(f)
@@ -190,61 +187,101 @@ class Figure:
         #if f.read(1) != b'\x07':
         #   raise Exception('Unexpected encoding mode. Please report this bug.')
 
-        unknown_bits = unp.unpackbits(8)
-        vertex_index_bits = unp.unpackbits(8)
-        uv_bits = unp.unpackbits(8)
-        somedata = unp.unpackbits(8)
+        if num_polyf3 + num_polyf4 > 0:
+            unknown_bits = unp.unpackbits(8)
+            vertex_index_bits = unp.unpackbits(8)
+            color_bits = unp.unpackbits(8)
+            color_id_bits = unp.unpackbits(8)
+            unp.unpackbits(8)
 
-        print('POLYGONFORMAT 3: unknown_bits=%d vertex_index_bits=%d uv_bits=%d somedata=%d' % (
+            for i in range(num_color):
+                r = unp.unpackbits(color_bits)
+                g = unp.unpackbits(color_bits)
+                b = unp.unpackbits(color_bits)
+
+            for i in range(num_polyf3):
+                unknown = unp.unpackbits(unknown_bits)
+                a = unp.unpackbits(vertex_index_bits)
+                b = unp.unpackbits(vertex_index_bits)
+                c = unp.unpackbits(vertex_index_bits)
+
+                color_id = unp.unpackbits(color_id_bits)
+
+                if verbose:
+                    print('unknown=%d a=%d b=%d c=%d color_id=%d' % (
+                        unknown, a, b, c, color_id))
+                self.faces.append((a, b, c))
+
+            for i in range(num_polyf4):
+                unknown = unp.unpackbits(unknown_bits)
+                a = unp.unpackbits(vertex_index_bits)
+                b = unp.unpackbits(vertex_index_bits)
+                c = unp.unpackbits(vertex_index_bits)
+                d = unp.unpackbits(vertex_index_bits)
+
+                color_id = unp.unpackbits(color_id_bits)
+
+                if verbose:
+                    print('unknown=%d a=%d b=%d c=%d d=%d color_id=%d' % (
+                        unknown, a, b, c, d, color_id))
+                self.faces.append((a, b, c, d))
+
+        if num_polyt3 + num_polyt4 > 0:
+            unknown_bits = unp.unpackbits(8)
+            vertex_index_bits = unp.unpackbits(8)
+            uv_bits = unp.unpackbits(8)
+            somedata = unp.unpackbits(8)
+
+            print('POLYGONFORMAT 3: unknown_bits=%d vertex_index_bits=%d uv_bits=%d somedata=%d' % (
                 unknown_bits, vertex_index_bits, uv_bits, somedata))
 
-        if unknown_bits > 8:
-            raise Exception('Format error. Please report this bug.')
+            if unknown_bits > 8:
+                raise Exception('Format error. Please report this bug.')
 
-        #max_index = 0
-        for i in range(num_polyt3):
-            unknown = unp.unpackbits(unknown_bits)
-            a = unp.unpackbits(vertex_index_bits)
-            b = unp.unpackbits(vertex_index_bits)
-            c = unp.unpackbits(vertex_index_bits)
+            #max_index = 0
+            for i in range(num_polyt3):
+                unknown = unp.unpackbits(unknown_bits)
+                a = unp.unpackbits(vertex_index_bits)
+                b = unp.unpackbits(vertex_index_bits)
+                c = unp.unpackbits(vertex_index_bits)
 
-            u1 = unp.unpackbits(uv_bits)
-            v1 = unp.unpackbits(uv_bits)
-            u2 = unp.unpackbits(uv_bits)
-            v2 = unp.unpackbits(uv_bits)
-            u3 = unp.unpackbits(uv_bits)
-            v3 = unp.unpackbits(uv_bits)
+                u1 = unp.unpackbits(uv_bits)
+                v1 = unp.unpackbits(uv_bits)
+                u2 = unp.unpackbits(uv_bits)
+                v2 = unp.unpackbits(uv_bits)
+                u3 = unp.unpackbits(uv_bits)
+                v3 = unp.unpackbits(uv_bits)
 
-            if verbose:
-                print('unknown=%d a=%d b=%d c=%d (%d %d) (%d %d) (%d %d)' % (
+                if verbose:
+                    print('unknown=%d a=%d b=%d c=%d (%d %d) (%d %d) (%d %d)' % (
                         unknown, a, b, c, u1, v1, u2, v2, u3, v3))
-            #max_index = max(max_index, a, b, c)
+                #max_index = max(max_index, a, b, c)
 
-            self.faces.append((a, b, c, u1, v1, u2, v2, u3, v3))
+                self.faces.append((a, b, c, u1, v1, u2, v2, u3, v3))
 
-        #max_index = 0
-        for i in range(num_polyt4):
-            unknown = unp.unpackbits(unknown_bits)
-            a = unp.unpackbits(vertex_index_bits)
-            b = unp.unpackbits(vertex_index_bits)
-            c = unp.unpackbits(vertex_index_bits)
-            d = unp.unpackbits(vertex_index_bits)
+            #max_index = 0
+            for i in range(num_polyt4):
+                unknown = unp.unpackbits(unknown_bits)
+                a = unp.unpackbits(vertex_index_bits)
+                b = unp.unpackbits(vertex_index_bits)
+                c = unp.unpackbits(vertex_index_bits)
+                d = unp.unpackbits(vertex_index_bits)
 
-            u1 = unp.unpackbits(uv_bits)
-            v1 = unp.unpackbits(uv_bits)
-            u2 = unp.unpackbits(uv_bits)
-            v2 = unp.unpackbits(uv_bits)
-            u3 = unp.unpackbits(uv_bits)
-            v3 = unp.unpackbits(uv_bits)
-            u4 = unp.unpackbits(uv_bits)
-            v4 = unp.unpackbits(uv_bits)
+                u1 = unp.unpackbits(uv_bits)
+                v1 = unp.unpackbits(uv_bits)
+                u2 = unp.unpackbits(uv_bits)
+                v2 = unp.unpackbits(uv_bits)
+                u3 = unp.unpackbits(uv_bits)
+                v3 = unp.unpackbits(uv_bits)
+                u4 = unp.unpackbits(uv_bits)
+                v4 = unp.unpackbits(uv_bits)
 
-            if verbose:
-                print('unknown=%d a=%d b=%d c=%d d=%d (%d %d) (%d %d) (%d %d) (%d %d)' % (
+                if verbose:
+                    print('unknown=%d a=%d b=%d c=%d d=%d (%d %d) (%d %d) (%d %d) (%d %d)' % (
                         unknown, a, b, c, d, u1, v1, u2, v2, u3, v3, u4, v4))
-            #max_index = max(max_index, a, b, c, d)
+                #max_index = max(max_index, a, b, c, d)
 
-            self.faces.append((a, b, c, d, u1, v1, u2, v2, u3, v3, u4, v4))
+                self.faces.append((a, b, c, d, u1, v1, u2, v2, u3, v3, u4, v4))
 
         # decode bones
         bone_vertices_sum = 0
