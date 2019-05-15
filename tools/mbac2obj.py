@@ -41,7 +41,15 @@ def MBAC_to_obj(f, obj, verbose=False):
         vs.sink(x, y, z)
 
     for face in figure.faces:
-        if len(face) == 9:
+        if len(face) == 3:
+            a, b, c = face
+
+            vs.triangle_vt(a, b, c, -3, -2, -1)
+        elif len(face) == 4:
+            a, b, c, d = face
+
+            vs.quad_vt(a, b, d, c, -4, -3, -1, -2)
+        elif len(face) == 9:
             a, b, c, u1, v1, u2, v2, u3, v3 = face
 
             vs.texcoord(u1, v1)
