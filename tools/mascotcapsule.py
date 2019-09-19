@@ -307,7 +307,9 @@ class Figure:
                 raise Exception('Format error (negative parent). Please report this bug.')
 
             mtx = (m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23)
-            self.bones.append((parent, mtx, bone_vertices_sum, bone_vertices_sum + bone_vertices))
+            mtx_parent = self.get_parent_matrix(parent)
+            mtx_res = self.mult_matrix(mtx_parent, mtx)
+            self.bones.append((parent, mtx_res, bone_vertices_sum, bone_vertices_sum + bone_vertices))
 
             bone_vertices_sum += bone_vertices
 
@@ -316,8 +318,6 @@ class Figure:
 
         # apply bone transformations
         for i, (parent, mtx, start, end) in enumerate(self.bones):
-            mtx = self.get_bone_matrix(i)
-
             # apply transformation to vertices
             for i in range(start, end):
                 x, y, z = self.vertices[i]
@@ -348,9 +348,7 @@ class Figure:
         if file_end > end_at:
             print('WARNING: %d uninterpreted bytes in file' % (file_end - end_at))
 
-    def get_bone_matrix(self, index):
-        parent = self.bones[index][0]
-
+    def get_parent_matrix(self, parent):
         if parent < 0:
             parent_mtx = (4096, 0, 0, 0,
                           0, 4096, 0, 0,
@@ -359,22 +357,21 @@ class Figure:
             assert parent < len(self.bones)
             parent_mtx = self.bones[parent][1]
 
-        mtx = self.bones[index][1]
+        return parent_mtx
 
-        a, b = parent_mtx, mtx
+    def mult_matrix(self, a, b):
+        m00 = (a[0] * b[0] + a[1] * b[4] + a[2] * b[8]) / 4096
+        m01 = (a[0] * b[1] + a[1] * b[5] + a[2] * b[9]) / 4096
+        m02 = (a[0] * b[2] + a[1] * b[6] + a[2] * b[10]) / 4096
+        m03 = (a[0] * b[3] + a[1] * b[7] + a[2] * b[11]) / 4096 + a[3]
 
-        m00 = (a[0] * b[0] + a[1] * b[4] + a[ 2] * b[ 8]) / 4096
-        m01 = (a[0] * b[1] + a[1] * b[5] + a[ 2] * b[ 9]) / 4096
-        m02 = (a[0] * b[2] + a[1] * b[6] + a[ 2] * b[10]) / 4096
-        m03 = (a[0] * b[3] + a[1] * b[7] + a[ 2] * b[11]) / 4096 + a[ 3]
+        m10 = (a[4] * b[0] + a[5] * b[4] + a[6] * b[8]) / 4096
+        m11 = (a[4] * b[1] + a[5] * b[5] + a[6] * b[9]) / 4096
+        m12 = (a[4] * b[2] + a[5] * b[6] + a[6] * b[10]) / 4096
+        m13 = (a[4] * b[3] + a[5] * b[7] + a[6] * b[11]) / 4096 + a[7]
 
-        m10 = (a[4] * b[0] + a[5] * b[4] + a[ 6] * b[ 8]) / 4096
-        m11 = (a[4] * b[1] + a[5] * b[5] + a[ 6] * b[ 9]) / 4096
-        m12 = (a[4] * b[2] + a[5] * b[6] + a[ 6] * b[10]) / 4096
-        m13 = (a[4] * b[3] + a[5] * b[7] + a[ 6] * b[11]) / 4096 + a[ 7]
-
-        m20 = (a[8] * b[0] + a[9] * b[4] + a[10] * b[ 8]) / 4096
-        m21 = (a[8] * b[1] + a[9] * b[5] + a[10] * b[ 9]) / 4096
+        m20 = (a[8] * b[0] + a[9] * b[4] + a[10] * b[8]) / 4096
+        m21 = (a[8] * b[1] + a[9] * b[5] + a[10] * b[9]) / 4096
         m22 = (a[8] * b[2] + a[9] * b[6] + a[10] * b[10]) / 4096
         m23 = (a[8] * b[3] + a[9] * b[7] + a[10] * b[11]) / 4096 + a[11]
 
