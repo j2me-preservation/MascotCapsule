@@ -235,7 +235,8 @@ class Figure:
             print('POLYGONFORMAT 3: unknown_bits=%d vertex_index_bits=%d uv_bits=%d somedata=%d' % (
                 unknown_bits, vertex_index_bits, uv_bits, somedata))
 
-            if unknown_bits > 8:
+            # Highest value seen in the wild (Devil May Cry 3D.jar)
+            if unknown_bits > 10:
                 raise Exception('Format error. Please report this bug.')
 
             #max_index = 0

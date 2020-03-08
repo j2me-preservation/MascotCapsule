@@ -4,7 +4,7 @@
 
 import sys
 
-def fishlabs_deobfuscate(data):
+def deobfuscate(data):
     length = len(data)
 
     data = bytearray(data)
@@ -25,6 +25,32 @@ def fishlabs_deobfuscate(data):
 
     return bytes(data)
 
+# deobfuscate if needed
+def normalize(data, ext):
+    if is_obfuscated(data, ext):
+        return deobfuscate(data)
+    else:
+        return data
+
+def is_obfuscated(data, ext):
+    if ext.upper() == '.BMP':
+        if data[-2:] == b'MB':
+            return True
+        elif data[0:2] == b'BM':
+            return False
+    elif ext.upper() == '.MBAC':
+        if data[-2:] == b'BM':
+            return True
+        elif data[0:2] == b'MB':
+            return False
+    elif ext.upper() == '.PNG':
+        if data[-4:] == b'GNP\x89':
+            return True
+        elif data[0:4] == b'\x89PNG':
+            return False
+
+    return None
+
 if __name__ == "__main__":
     import argparse
 
@@ -36,4 +62,4 @@ if __name__ == "__main__":
         with open(filename, 'rb+') as f:
             data = f.read()
             f.seek(0)
-            f.write(fishlabs_deobfuscate(data))
+            f.write(deobfuscate(data))
