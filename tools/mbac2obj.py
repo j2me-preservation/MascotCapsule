@@ -74,8 +74,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='convert MBAC models to OBJ')
     parser.add_argument('mbacfile')
     parser.add_argument('objfile')
+    parser.add_argument("-v", dest="verbose")
     args = parser.parse_args()
 
     with open(args.mbacfile, 'rb') as f:
         with open(args.objfile, 'wt') as obj:
-            MBAC_to_obj(f, obj, True)
+            MBAC_to_obj(f, obj, args.verbose)
