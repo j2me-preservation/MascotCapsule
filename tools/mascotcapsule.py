@@ -207,9 +207,8 @@ class Figure:
 
                 color_id = unp.unpackbits(color_id_bits)
 
-                if verbose:
-                    print('unknown=%d a=%d b=%d c=%d color_id=%d' % (
-                        unknown, a, b, c, color_id))
+                if verbose: print('unknown=%d a=%d b=%d c=%d color_id=%d' % (
+                    unknown, a, b, c, color_id))
                 self.faces.append((a, b, c))
 
             for i in range(num_polyf4):
@@ -221,9 +220,8 @@ class Figure:
 
                 color_id = unp.unpackbits(color_id_bits)
 
-                if verbose:
-                    print('unknown=%d a=%d b=%d c=%d d=%d color_id=%d' % (
-                        unknown, a, b, c, d, color_id))
+                if verbose: print('unknown=%d a=%d b=%d c=%d d=%d color_id=%d' % (
+                    unknown, a, b, c, d, color_id))
                 self.faces.append((a, b, c, d))
 
         if num_polyt3 + num_polyt4 > 0:
@@ -232,7 +230,7 @@ class Figure:
             uv_bits = unp.unpackbits(8)
             somedata = unp.unpackbits(8)
 
-            print('POLYGONFORMAT 3: unknown_bits=%d vertex_index_bits=%d uv_bits=%d somedata=%d' % (
+            if verbose: print('POLYGONFORMAT 3: unknown_bits=%d vertex_index_bits=%d uv_bits=%d somedata=%d' % (
                 unknown_bits, vertex_index_bits, uv_bits, somedata))
 
             # Highest value seen in the wild (Devil May Cry 3D.jar)
@@ -253,9 +251,8 @@ class Figure:
                 u3 = unp.unpackbits(uv_bits)
                 v3 = unp.unpackbits(uv_bits)
 
-                if verbose:
-                    print('unknown=%d a=%d b=%d c=%d (%d %d) (%d %d) (%d %d)' % (
-                        unknown, a, b, c, u1, v1, u2, v2, u3, v3))
+                if verbose: print('unknown=%d a=%d b=%d c=%d (%d %d) (%d %d) (%d %d)' % (
+                    unknown, a, b, c, u1, v1, u2, v2, u3, v3))
                 #max_index = max(max_index, a, b, c)
 
                 self.faces.append((a, b, c, u1, v1, u2, v2, u3, v3))
@@ -277,9 +274,8 @@ class Figure:
                 u4 = unp.unpackbits(uv_bits)
                 v4 = unp.unpackbits(uv_bits)
 
-                if verbose:
-                    print('unknown=%d a=%d b=%d c=%d d=%d (%d %d) (%d %d) (%d %d) (%d %d)' % (
-                        unknown, a, b, c, d, u1, v1, u2, v2, u3, v3, u4, v4))
+                if verbose: print('unknown=%d a=%d b=%d c=%d d=%d (%d %d) (%d %d) (%d %d) (%d %d)' % (
+                    unknown, a, b, c, d, u1, v1, u2, v2, u3, v3, u4, v4))
                 #max_index = max(max_index, a, b, c, d)
 
                 self.faces.append((a, b, c, d, u1, v1, u2, v2, u3, v3, u4, v4))
@@ -289,17 +285,18 @@ class Figure:
         have_root = False
 
         for i in range(num_bones):
-            print('bone #', i)
+            if verbose: print('bone #', i)
             (bone_vertices, parent) = struct.unpack('Hh', f.read(4))
-            print('\tbone_vertices=%d parent=%d' % (bone_vertices, parent))
+            if verbose: print('\tbone_vertices=%d parent=%d' % (bone_vertices, parent))
 
             (m00, m01, m02, m03) = struct.unpack('hhhh', f.read(8))
             (m10, m11, m12, m13) = struct.unpack('hhhh', f.read(8))
             (m20, m21, m22, m23) = struct.unpack('hhhh', f.read(8))
 
-            print('\tmtx = [%d\t%d\t%d\t%d]' % (m00, m01, m02, m03))
-            print('\t      [%d\t%d\t%d\t%d]' % (m10, m11, m12, m13))
-            print('\t      [%d\t%d\t%d\t%d]' % (m20, m21, m22, m23))
+            if verbose:
+                print('\tmtx = [%d\t%d\t%d\t%d]' % (m00, m01, m02, m03))
+                print('\t      [%d\t%d\t%d\t%d]' % (m10, m11, m12, m13))
+                print('\t      [%d\t%d\t%d\t%d]' % (m20, m21, m22, m23))
 
             if parent == -1:
                 if have_root:
@@ -331,7 +328,7 @@ class Figure:
         for i in range(2):
             key = struct.unpack('BB', f.read(2))
 
-            print('key: %02X%02X' % key)
+            if verbose: print('key: %02X%02X' % key)
 
             for word_index in range(4):
                 word = [None, None]
@@ -340,7 +337,7 @@ class Figure:
                     encrypted_byte = ord(f.read(1))
                     word[byte_index] = ((encrypted_byte ^ key[byte_index]) + 127) & 0xff
 
-                print('%02X%02X "%c%c"' % tuple(word + word))
+                if verbose: print('%02X%02X "%c%c"' % tuple(word + word))
 
         end_at = f.tell()
         f.seek(0,2)
