@@ -1,23 +1,26 @@
-# hepler to render OBJ file into PNG
+# helper to render OBJ files (together with blender_importscript.py)
 
+from pathlib import Path
 import subprocess
+import sys
 import time
 
-BLENDER_EXE = 'C:/usr/blender-2.79-windows64/blender.exe'
-
-def render_obj(blender, objfile, pngfile, scale):
+def render_obj(objfile, pngfile, texture, resolution=(1290, 1080), format="PNG", axis_forward='-Z', axis_up='Y'):
+    script_path = Path(__file__).resolve().parent / "blender_importscript.py"
     subprocess.check_call([
-            blender,
+            "blender",
             '--background',
-            '--python', 'blender_importscript.py',
+            "--engine", "CYCLES",       # only Cycles rendering works without OpenGL
+            "-noaudio",                 # reduce stderr clutter (we don't need no sound)
+            '--python', script_path,
             '--render-output', '//' + pngfile,
-            '--render-format', 'PNG',
+            '--render-format', format,
             '--use-extension', '1',
             '-f', '0',
-            '--', objfile, str(scale)
-            ])
+            '--', objfile, texture if texture else "", str(resolution[0]), str(resolution[1]),
+            axis_forward,
+            axis_up
+            ], stdout=subprocess.DEVNULL)
 
+    # TODO: is this really needed, and why?
     time.sleep(1)
-
-if __name__ == "__main__":
-    render_obj(BLENDER_EXE, 'vertexdump.obj', 'vertexdump.png', 0.002)

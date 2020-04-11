@@ -1,4 +1,5 @@
 # analyze all MBAC files in a directory, print out stats
+# can also do rendering, but that has been vastly improved in https://github.com/minexew/mbac-gallery
 
 import io, os, struct, sys
 
@@ -21,9 +22,8 @@ def render_MBAC(path, filedata):
         with open(TMPOBJ, 'wt') as obj:
             mbac2obj.MBAC_to_obj(f, obj)
 
-        SCALE = 0.001
-        render_obj.render_obj(render_obj.BLENDER_EXE, TMPOBJ,
-                os.path.join('outputs', path.replace('/', '_').replace('\\', '_')), SCALE)
+        render_obj.render_obj(TMPOBJ,
+                os.path.join('outputs', path.replace('/', '_').replace('\\', '_')))
         os.remove(TMPOBJ)
 
 def analyze_filedata(path, filedata, render):
