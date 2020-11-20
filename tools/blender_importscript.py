@@ -12,6 +12,7 @@ TEXTURE = argv[1]
 RESOLUTION_X = int(argv[2])
 RESOLUTION_Y = int(argv[3])
 AXIS_FORWARD, AXIS_UP = argv[4:6]
+TEXTURE_INTERPOLATION = argv[6]
 
 bpy.ops.object.delete()
 bpy.ops.import_scene.obj(filepath=OBJFILE, axis_forward=AXIS_FORWARD, axis_up=AXIS_UP)
@@ -24,7 +25,9 @@ if TEXTURE:
 
     texImage = mat.node_tree.nodes.new('ShaderNodeTexImage')
     texImage.image = bpy.data.images.load(TEXTURE)
+    texImage.interpolation = TEXTURE_INTERPOLATION
     mat.node_tree.links.new(bsdf.inputs['Base Color'], texImage.outputs['Color'])
+    bsdf.inputs['Specular'].default_value = 0
 
     # scale UVs from pixel coordinates to normalized coordinates
     # cheers to https://blender.stackexchange.com/a/111307

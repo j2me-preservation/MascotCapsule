@@ -5,7 +5,8 @@ import subprocess
 import sys
 import time
 
-def render_obj(objfile, pngfile, texture, resolution=(1290, 1080), format="PNG", axis_forward='-Z', axis_up='Y'):
+def render_obj(objfile, pngfile, texture, resolution=(1290, 1080), format="PNG", axis_forward='-Z', axis_up='Y',
+                texture_interpolation="Linear"):
     script_path = Path(__file__).resolve().parent / "blender_importscript.py"
     subprocess.check_call([
             "blender",
@@ -19,7 +20,8 @@ def render_obj(objfile, pngfile, texture, resolution=(1290, 1080), format="PNG",
             '-f', '0',
             '--', objfile, texture if texture else "", str(resolution[0]), str(resolution[1]),
             axis_forward,
-            axis_up
+            axis_up,
+            texture_interpolation,      # https://docs.blender.org/api/current/bpy.types.ShaderNodeTexImage.html#bpy.types.ShaderNodeTexImage.interpolation
             ], stdout=subprocess.DEVNULL)
 
     # TODO: is this really needed, and why?
