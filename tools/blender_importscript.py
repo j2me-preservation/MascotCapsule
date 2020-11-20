@@ -1,6 +1,7 @@
 # helper for offline rendering using blender
 
 import bpy
+import bmesh
 import sys
  
 argv = sys.argv
@@ -15,6 +16,8 @@ AXIS_FORWARD, AXIS_UP = argv[4:6]
 bpy.ops.object.delete()
 bpy.ops.import_scene.obj(filepath=OBJFILE, axis_forward=AXIS_FORWARD, axis_up=AXIS_UP)
 
+obj, = bpy.context.selected_objects
+
 if TEXTURE:
     mat = bpy.data.materials["Default OBJ"]
     bsdf = mat.node_tree.nodes["Principled BSDF"]
@@ -23,9 +26,32 @@ if TEXTURE:
     texImage.image = bpy.data.images.load(TEXTURE)
     mat.node_tree.links.new(bsdf.inputs['Base Color'], texImage.outputs['Color'])
 
-# scale object down to be lit fully
-obj, = bpy.context.selected_objects
+    # scale UVs from pixel coordinates to normalized coordinates
+    # cheers to https://blender.stackexchange.com/a/111307
+    def transform_uv(obj, scale, translate):
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.mode_set(mode = 'EDIT')
 
+        me = obj.data
+        bm = bmesh.from_edit_mesh(me)
+
+        uv_layer = bm.loops.layers.uv.verify()
+
+        # adjust uv coordinates
+        for face in bm.faces:
+            for loop in face.loops:
+                loop_uv = loop[uv_layer]
+                loop_uv.uv = loop_uv.uv[0] * scale[0] + translate[0], loop_uv.uv[1] * scale[1] + translate[1]
+
+        bmesh.update_edit_mesh(me)
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    w, h = texImage.image.size
+
+    if w > 0 and h > 0:
+        transform_uv(obj, (1 / w, -1 / h), (0, 1))
+
+# scale object down to be lit fully
 dim = max(obj.dimensions.x, obj.dimensions.y, obj.dimensions.z)
 SCALE = 5 / dim
 bpy.ops.transform.resize(value=(SCALE, SCALE, SCALE))

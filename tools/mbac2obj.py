@@ -22,7 +22,7 @@ class VertexSink:
         print('n %d %d %d' % (x, t, z), file=self.f)
 
     def texcoord(self, u, v):
-        print(f'vt {u/255} {1 - v/255}', file=self.f)
+        print(f'vt {u} {v}', file=self.f)
 
     def quad_vt(self, v1, v2, v3, v4, vt1, vt2, vt3, vt4):
         v1, v2, v3, v4, vt1, vt2, vt3, vt4 = [fixup_index(i) for i in (v1, v2, v3, v4, vt1, vt2, vt3, vt4)]
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='convert MBAC models to OBJ')
     parser.add_argument('mbacfile')
     parser.add_argument('objfile')
-    parser.add_argument("-v", dest="verbose")
+    parser.add_argument("-v", dest="verbose", action="store_true")
     args = parser.parse_args()
 
     with open(args.mbacfile, 'rb') as f:
