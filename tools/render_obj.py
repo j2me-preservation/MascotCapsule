@@ -1,11 +1,11 @@
 # helper to render OBJ files (together with blender_importscript.py)
 
 from pathlib import Path
+import os
 import subprocess
-import sys
 import time
 
-def render_obj(objfile, pngfile, texture, resolution=(1290, 1080), format="PNG", axis_forward='-Z', axis_up='Y',
+def render_obj(objfile, pngfile, texture="", resolution=(1290, 1080), format="PNG", axis_forward='-Z', axis_up='Y',
                 texture_interpolation="Linear"):
     script_path = Path(__file__).resolve().parent / "blender_importscript.py"
     subprocess.check_call([
@@ -13,7 +13,7 @@ def render_obj(objfile, pngfile, texture, resolution=(1290, 1080), format="PNG",
             '--background',
             "--engine", "CYCLES",       # only Cycles rendering works without OpenGL
             "-noaudio",                 # reduce stderr clutter (we don't need no sound)
-            '--python', script_path,
+            '--python', str(script_path),
             '--render-output', '//' + pngfile,
             '--render-format', format,
             '--use-extension', '1',
