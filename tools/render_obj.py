@@ -1,13 +1,13 @@
 # helper to render OBJ files (together with blender_importscript.py)
 
 from pathlib import Path
+import os
 import subprocess
-import sys
 import time
 
-def render_obj(objfile, pngfile, texture, resolution=(1290, 1080), format="PNG", axis_forward='-Z', axis_up='Y',
+def render_obj(objfile, pngfile, texture="", resolution=(1290, 1080), format="PNG", axis_forward='-Z', axis_up='Y',
                 texture_interpolation="Linear"):
-    script_path = Path(__file__).resolve().parent / "blender_importscript.py"
+    script_path = str(os.path.join(Path(__file__).resolve().parent, "blender_importscript.py"))
     subprocess.check_call([
             "blender",
             '--background',

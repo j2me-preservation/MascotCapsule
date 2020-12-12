@@ -1,12 +1,12 @@
 # analyze all MBAC files in a directory, print out stats
 # can also do rendering, but that has been vastly improved in https://github.com/minexew/mbac-gallery
 
-import io, os, struct, sys
+import os, struct, sys
 
 import mbac2obj
 import render_obj
 
-from fishlabs_obfuscation import fishlabs_deobfuscate
+from fishlabs_obfuscation import deobfuscate
 
 DIR = sys.argv[1]
 
@@ -57,7 +57,7 @@ def analyze_file(path, render):
             analyze_filedata(path, filedata, render)
         elif filedata[len(filedata)-2:] == b'BM':
             # File is obfuscated (GoF 1, Deep)
-            analyze_filedata(path, fishlabs_deobfuscate(filedata), render)
+            analyze_filedata(path, deobfuscate(filedata), render)
         else:
             raise Exception('Invalid format of ' + path)
 
